@@ -1,0 +1,42 @@
+import streamlit as st
+import random
+from PIL import Image, ImageDraw, ImageFont
+import os
+from google.cloud import aistudio_v1beta1 as aistudio
+
+# Initialize Gemini client
+client = aistudio.PredictionServiceClient()
+
+# Set up Streamlit app
+st.title("AI Meme Generator")
+st.write("Enter a concept, and I'll generate a meme for you!")
+
+concept = st.text_input("Enter a concept:")
+
+if st.button("Generate Meme"):
+    if concept:
+        # Generate meme caption using Gemini AI
+        response = client.predict(
+            model="projects/YOUR_PROJECT_ID/locations/us-central1/models/YOUR_MODEL_ID",
+            instances=[{"content": concept}],
+        )
+        caption = response.predictions[0]["content"]
+
+        # Select a random meme template
+        templates = ["drake.jpg", "pikachu.png", "distracted.jpg"]
+        template = random.choice(templates)
+        img = Image.open(f"templates/{template}")
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()
+
+        # Add caption to meme
+        textwidth, textheight = draw.textsize(caption, font)
+        width, height = img.size
+        x = (width - textwidth) / 2
+        y = height - textheight - 10
+        draw.text((x, y), caption, font=font, fill="white")
+
+        # Display the meme
+        st.image(img, caption=caption)
+    else:
+        st.warning("Please enter a concept.")

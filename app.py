@@ -9,7 +9,7 @@ from io import BytesIO
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # --- Streamlit app ---
-st.title("🤖 AI Meme Generator")
+st.title("🕵️ Clandestine – An AI Meme Creator")
 
 # Meme templates
 meme_images = [

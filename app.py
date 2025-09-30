@@ -11,10 +11,18 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- Streamlit app setup ---
 st.title("🤖 AI Meme Generator for Learning")
 
-# Meme image templates
+# Meme image templates (more popular memes added)
 meme_images = [
-    "https://i.imgflip.com/9ehk.jpg",    # One Does Not Simply
-    "https://i.imgflip.com/1otk96.jpg"   # Change My Mind
+    "https://i.imgflip.com/9ehk.jpg",       # One Does Not Simply
+    "https://i.imgflip.com/1otk96.jpg",    # Change My Mind
+    "https://i.imgflip.com/26am.jpg",      # Distracted Boyfriend
+    "https://i.imgflip.com/1ur9b0.jpg",    # Drake Hotline Bling
+    "https://i.imgflip.com/3si4.jpg",      # Futurama Fry
+    "https://i.imgflip.com/1bij.jpg",      # Leonardo DiCaprio Cheers
+    "https://i.imgflip.com/2fm6x.jpg",     # Success Kid
+    "https://i.imgflip.com/9ehy.jpg",      # Batman Slapping Robin
+    "https://i.imgflip.com/4t0m5.jpg",     # Running Away Balloon
+    "https://i.imgflip.com/30b1gx.jpg"     # Gru’s Plan
 ]
 
 # Input from user
@@ -30,10 +38,6 @@ if concept:
         Generate a short, witty, and funny meme caption about "{concept}".
         Make it instantly understandable, punchy, and suitable for a meme image.
         Keep it under 15 words and limit to 1-2 lines.
-        Examples:
-        - "One does not simply ignore homework!"
-        - "I don't always code, but when I do, I debug forever."
-        Write a new caption similar in style.
         """
 
         # --- Generate meme caption ---
@@ -45,15 +49,15 @@ if concept:
         img_data = requests.get(meme_image_url).content
         img = Image.open(BytesIO(img_data))
 
-        # --- Set up font ---
+        # --- Set up font (bigger font) ---
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arial.ttf", 50)  # bigger font
+            font = ImageFont.truetype("arial.ttf", 70)  # bigger font
         except:
             font = ImageFont.load_default()
 
         # --- Wrap text manually ---
-        max_chars_per_line = 30
+        max_chars_per_line = 25
         words = meme_text.split()
         lines = []
         line = ""
@@ -67,7 +71,7 @@ if concept:
 
         # --- Create new canvas with extra space for text below ---
         W, H = img.size
-        extra_height = (len(lines) * 60) + 40  # room for bigger text
+        extra_height = (len(lines) * 80) + 40  # extra room for bigger text
         new_img = Image.new("RGB", (W, H + extra_height), "white")
         new_img.paste(img, (0, 0))
 
@@ -85,7 +89,7 @@ if concept:
                 font=font,
                 fill="black"
             )
-            y_text += bbox[3] - bbox[1] + 10  # spacing
+            y_text += bbox[3] - bbox[1] + 20  # spacing
 
         # --- Show final meme ---
         st.image(new_img, caption="✨ Your AI-Generated Meme", use_column_width=True)

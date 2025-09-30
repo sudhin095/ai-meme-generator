@@ -35,9 +35,9 @@ if topic:
 
         # --- Smart, concept-aware prompt ---
         prompt = (
-            f"Understand the concept '{topic}' and generate 3 short, punchy, funny meme captions. "
-            "Keep it very simple, relatable to Indian culture, under 12 words each. "
-            "Include emojis if relevant. Output captions separated by new lines."
+            f"Understand the concept '{topic}' deeply and generate 3 witty, punchy, and culturally relatable Indian meme captions. "
+            "Make them funny, under 12 words each, simple to read, and include relevant emojis if it enhances humor. "
+            "The captions should clearly reflect the concept and be instantly understandable. Output captions separated by new lines."
         )
 
         response = model.generate_content(prompt)
@@ -50,11 +50,10 @@ if topic:
 
         # --- Prepare font dynamically ---
         draw = ImageDraw.Draw(img)
-        max_font_size = 150  # Bigger maximum font size
+        max_font_size = 200  # Increased maximum font size
         min_font_size = 50
         font_size = max_font_size
 
-        # Reduce font size if text is too wide
         while True:
             try:
                 font = ImageFont.truetype("arial.ttf", font_size)
@@ -69,7 +68,7 @@ if topic:
 
         # --- Add space above image ---
         W, H = img.size
-        new_img = Image.new("RGB", (W, H + font_size + 40), "white")
+        new_img = Image.new("RGB", (W, H + font_size + 60), "white")
         draw = ImageDraw.Draw(new_img)
 
         # --- Place text above the image ---
@@ -79,9 +78,9 @@ if topic:
         y = 20
         draw.text((x, y), meme_text, font=font, fill="black")
 
-        new_img.paste(img, (0, font_size + 40))
+        new_img.paste(img, (0, font_size + 60))
 
-        st.image(new_img, caption="Your AI Meme!", use_column_width=True)
+        st.image(new_img, caption="Your Smart AI Meme!", use_column_width=True)
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")

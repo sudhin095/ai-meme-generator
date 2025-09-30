@@ -1,24 +1,14 @@
 import streamlit as st
-from google.generativeai import Client
+import google.generativeai as genai
 import random
 
-# Initialize the Google Generative AI client
-client = Client()
+# --- Configure Gemini API key ---
+# Make sure you have GEMINI_API_KEY in Streamlit secrets
+# st.secrets["GEMINI_API_KEY"]
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# List available models that support generateContent
-available_models = client.list_models()
-valid_models = [
-    model.name for model in available_models.models
-    if "generateContent" in model.supported_methods
-]
-
-if not valid_models:
-    st.error("No models supporting generateContent are available.")
-    st.stop()
-
-# Pick the first valid model
-model_to_use = valid_models[0]
-st.info(f"Using model: {model_to_use}")
+# --- Streamlit app setup ---
+st.title("🤖 AI Meme Generator for Learning")
 
 # Meme image templates
 meme_images = [
@@ -31,19 +21,29 @@ concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 
 if concept:
     try:
-        # Generate meme caption/text
-        response = client.generate_content(
-            model=model_to_use,
-            prompt=f"Create a short funny meme caption about: {concept}"
-        )
-        meme_text = response.result[0].content[0].text.strip()
+        # --- List all models and pick a valid one ---
+        models = genai.list_models().models
+        valid_models = [m.name for m in models if "generateContent" in m.supported_methods]
 
-        # Pick a random meme image
-        meme_image = random.choice(meme_images)
+        if not valid_models:
+            st.error("No models supporting generateContent are available.")
+        else:
+            model_to_use = valid_models[0]
+            st.info(f"Using model: {model_to_use}")
 
-        # Display meme
-        st.image(meme_image, use_column_width=True)
-        st.markdown(f"**Meme Caption:** {meme_text}")
+            # --- Generate meme caption ---
+            response = genai.generate_content(
+                model=model_to_use,
+                prompt=f"Create a short funny meme caption about: {concept}"
+            )
+            meme_text = response.result[0].content[0].text.strip()
+
+            # --- Pick a random meme image ---
+            meme_image = random.choice(meme_images)
+
+            # --- Display meme ---
+            st.image(meme_image, use_column_width=True)
+            st.markdown(f"**Meme Caption:** {meme_text}")
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")

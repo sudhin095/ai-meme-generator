@@ -22,16 +22,14 @@ concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 
 if concept:
     try:
-        # --- Pick a valid Gemini model for text generation ---
-        model_to_use = "gemini-1.5-t"
-        st.info(f"Using model: {model_to_use}")
+        # --- Initialize a Gemini model ---
+        model = genai.GenerativeModel("gemini-1.5-t")  # text generation model
 
         # --- Generate meme caption ---
-        response = genai.generate_content(
-            model=model_to_use,
-            prompt=f"Create a short funny meme caption about: {concept}"
+        response = model.generate_content(
+            f"Create a short funny meme caption about: {concept}"
         )
-        meme_text = response.result[0].content[0].text.strip()
+        meme_text = response.text.strip()
 
         # --- Pick a random meme image ---
         meme_image_url = random.choice(meme_images)
@@ -41,9 +39,9 @@ if concept:
         # --- Draw caption on image ---
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arial.ttf", 40)  # Windows/Streamlit Cloud
+            font = ImageFont.truetype("arial.ttf", 40)
         except:
-            font = ImageFont.load_default()  # fallback
+            font = ImageFont.load_default()
 
         # Wrap text (simple split by length)
         max_width = 30
@@ -60,7 +58,7 @@ if concept:
 
         # Draw each line centered
         W, H = img.size
-        y_text = H - (len(lines) * 50) - 20  # bottom padding
+        y_text = H - (len(lines) * 50) - 20
         for line in lines:
             w, h = draw.textsize(line, font=font)
             x = (W - w) / 2

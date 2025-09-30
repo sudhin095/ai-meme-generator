@@ -25,10 +25,19 @@ if concept:
         # --- Initialize a Gemini model ---
         model = genai.GenerativeModel("gemini-2.5-flash-lite")  # text generation model
 
+        # --- Improved prompt for clearer captions ---
+        prompt = f"""
+        Generate a short, witty, and funny meme caption about "{concept}".
+        Make it instantly understandable, punchy, and suitable for a meme image.
+        Keep it under 15 words and limit to 1-2 lines.
+        Examples:
+        - "One does not simply ignore homework!"
+        - "I don't always code, but when I do, I debug forever."
+        Write a new caption similar in style.
+        """
+
         # --- Generate meme caption ---
-        response = model.generate_content(
-            f"Create a short funny meme caption about: {concept}"
-        )
+        response = model.generate_content(prompt)
         meme_text = response.text.strip()
 
         # --- Pick a random meme image ---

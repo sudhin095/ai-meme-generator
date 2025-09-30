@@ -11,7 +11,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- Streamlit app ---
 st.title("🤖 AI Meme Generator")
 
-# --- Meme templates (school-safe) ---
+# --- School-safe Meme templates ---
 meme_images = [
     "https://i.imgflip.com/9ehk.jpg",       # One Does Not Simply
     "https://i.imgflip.com/1otk96.jpg",    # Change My Mind
@@ -45,7 +45,7 @@ if topic and (st.session_state.generated_meme is None or generate_new):
     try:
         model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-        # --- Smarter prompt for humor ---
+        # --- Smarter prompt for school-safe humor ---
         prompt = (
             f"Understand the concept '{topic}' and generate 7 short, punchy, funny meme captions. "
             "Make them simple, relatable to Indian culture (school, exams, traffic, cricket, food, Bollywood), "

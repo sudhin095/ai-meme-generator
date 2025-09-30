@@ -8,7 +8,7 @@ from io import BytesIO
 # Configure Gemini API key
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-st.title("🤖 AI Meme Generator with Zoom (Persistent)")
+st.title("🤖 AI Meme Generator with Zoom & More Humor")
 
 # Meme templates
 meme_images = [
@@ -29,11 +29,16 @@ topic = st.text_input("Enter a concept/topic for a smart Indian-style meme:")
 def generate_meme(topic):
     try:
         model = genai.GenerativeModel("gemini-2.5-flash-lite")
+        
+        # Smarter, funnier prompt
         prompt = (
-            f"Understand the concept '{topic}' and generate 5 short, punchy, funny meme captions. "
-            "Make them simple, relatable to Indian culture, and include emojis if relevant. "
-            "Do not number the captions. Output captions separated by new lines."
+            f"Understand the concept '{topic}' and generate 7 funny, punchy meme captions. "
+            "Make them very simple, witty, and relatable to Indian culture. "
+            "Include emojis and everyday Indian situations. "
+            "Keep each caption under 12 words. Do not number them. "
+            "Output captions separated by new lines."
         )
+        
         response = model.generate_content(prompt)
         captions = [c.strip() for c in response.text.strip().split("\n") if c.strip()]
         if not captions:
@@ -49,7 +54,7 @@ def generate_meme(topic):
         draw = ImageDraw.Draw(new_img)
 
         try:
-            font = ImageFont.truetype("arial.ttf", 140)  # Bigger font
+            font = ImageFont.truetype("arial.ttf", 150)  # Big font for readability
         except:
             font = ImageFont.load_default()
 
@@ -79,7 +84,7 @@ if topic:
         display_width = int(st.session_state.meme_img.width * zoom_factor)
         st.image(st.session_state.meme_img, caption="Your AI Meme!", width=display_width)
 
-# Optional: Button to regenerate a new meme
+# Button to manually generate a new meme
 if topic and st.button("Generate New Meme"):
     st.session_state.meme_img = generate_meme(topic)
     st.session_state.topic = topic

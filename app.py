@@ -1,9 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 import random
+import requests
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 # --- Configure Gemini API key ---
-# Make sure you have GEMINI_API_KEY in Streamlit secrets
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # --- Streamlit app setup ---
@@ -20,29 +22,53 @@ concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 
 if concept:
     try:
-        # --- List all available models and convert generator to list ---
-        models = list(genai.list_models())
-        valid_models = [m.name for m in models if "generateContent" in m.supported_methods]
+        # --- Pick a valid Gemini model for text generation ---
+        model_to_use = "gemini-1.5-t"
+        st.info(f"Using model: {model_to_use}")
 
-        if not valid_models:
-            st.error("No models supporting generateContent are available.")
-        else:
-            model_to_use = valid_models[0]  # Pick the first valid model
-            st.info(f"Using model: {model_to_use}")
+        # --- Generate meme caption ---
+        response = genai.generate_content(
+            model=model_to_use,
+            prompt=f"Create a short funny meme caption about: {concept}"
+        )
+        meme_text = response.result[0].content[0].text.strip()
 
-            # --- Generate meme caption ---
-            response = genai.generate_content(
-                model=model_to_use,
-                prompt=f"Create a short funny meme caption about: {concept}"
-            )
-            meme_text = response.result[0].content[0].text.strip()
+        # --- Pick a random meme image ---
+        meme_image_url = random.choice(meme_images)
+        img_data = requests.get(meme_image_url).content
+        img = Image.open(BytesIO(img_data))
 
-            # --- Pick a random meme image ---
-            meme_image = random.choice(meme_images)
+        # --- Draw caption on image ---
+        draw = ImageDraw.Draw(img)
+        try:
+            font = ImageFont.truetype("arial.ttf", 40)  # Windows/Streamlit Cloud
+        except:
+            font = ImageFont.load_default()  # fallback
 
-            # --- Display meme ---
-            st.image(meme_image, use_column_width=True)
-            st.markdown(f"**Meme Caption:** {meme_text}")
+        # Wrap text (simple split by length)
+        max_width = 30
+        lines = []
+        words = meme_text.split()
+        line = ""
+        for word in words:
+            if len(line + " " + word) <= max_width:
+                line += " " + word
+            else:
+                lines.append(line.strip())
+                line = word
+        lines.append(line.strip())
+
+        # Draw each line centered
+        W, H = img.size
+        y_text = H - (len(lines) * 50) - 20  # bottom padding
+        for line in lines:
+            w, h = draw.textsize(line, font=font)
+            x = (W - w) / 2
+            draw.text((x, y_text), line, font=font, fill="white", stroke_fill="black", stroke_width=2)
+            y_text += h + 5
+
+        # --- Show final meme ---
+        st.image(img, caption="✨ Your AI-Generated Meme", use_column_width=True)
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")

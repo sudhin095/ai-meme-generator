@@ -11,7 +11,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- Streamlit app ---
 st.title("🤖 AI Meme Generator")
 
-# Meme templates
+# Meme templates (replace with actual images if needed)
 meme_images = [
     "https://i.imgflip.com/9ehk.jpg",       # One Does Not Simply
     "https://i.imgflip.com/1otk96.jpg",    # Change My Mind
@@ -37,16 +37,12 @@ if topic:
         prompt = (
             f"Understand the concept '{topic}' and generate 3 short, punchy, funny meme captions. "
             "Keep it very simple, relatable to Indian culture, under 12 words each. "
-            "Include emojis if relevant. Output captions separated by new lines, without numbering."
+            "Include emojis if relevant. Output captions separated by new lines."
         )
 
         response = model.generate_content(prompt)
         captions = response.text.strip().split("\n")
-
-        # Remove numbering if present
-        clean_captions = [c.split(". ", 1)[-1] if ". " in c else c for c in captions]
-
-        meme_text = random.choice(clean_captions)  # pick one caption randomly
+        meme_text = random.choice(captions)  # pick one caption randomly
 
         # --- Pick a random meme image ---
         img_url = random.choice(meme_images)
@@ -55,13 +51,13 @@ if topic:
         # --- Prepare font ---
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arial.ttf", 120)  # Even bigger font
+            font = ImageFont.truetype("arial.ttf", 80)  # Bigger font
         except:
             font = ImageFont.load_default()
 
         # --- Add space above image ---
         W, H = img.size
-        new_img = Image.new("RGB", (W, H + 150), "white")
+        new_img = Image.new("RGB", (W, H + 120), "white")
         draw = ImageDraw.Draw(new_img)
 
         # --- Place text above the image ---
@@ -71,7 +67,7 @@ if topic:
         y = 20
         draw.text((x, y), meme_text, font=font, fill="black")
 
-        new_img.paste(img, (0, 150))
+        new_img.paste(img, (0, 120))
 
         st.image(new_img, caption="Your AI Meme!", use_column_width=True)
 

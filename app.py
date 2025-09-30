@@ -11,7 +11,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- Streamlit app ---
 st.title("🤖 AI Meme Generator")
 
-# --- School-safe meme templates ---
+# --- Meme templates (school-safe) ---
 meme_images = [
     "https://i.imgflip.com/9ehk.jpg",       # One Does Not Simply
     "https://i.imgflip.com/1otk96.jpg",    # Change My Mind
@@ -24,13 +24,6 @@ meme_images = [
     "https://i.pinimg.com/originals/21/5b/9f/215b9f09a6a045f849f6d944b60eb92f.jpg",  # Jethalal meme
     "https://i.imgflip.com/5c1.jpg",       # Monkey Puppet
     "https://i.imgflip.com/3si3.jpg",      # Frog meme
-    "https://i.pinimg.com/originals/6b/2e/85/6b2e85d47c7c8f1e4a1c07c3e1b8d0e2.jpg",  # Indian student meme
-    "https://i.pinimg.com/originals/8e/3a/77/8e3a77f6d5c0f3a02f2d7f7b6d5f0b4f.jpg",  # Indian reaction meme
-    "https://i.imgflip.com/2hgfw.jpg",     # Drake Approving / Disapproving
-    "https://i.imgflip.com/30b1gx.jpg",    # Mocking SpongeBob
-    "https://i.imgflip.com/2wifvo.jpg",    # Brain Expanding
-    "https://i.imgflip.com/4acd7j.jpg",    # Funny Cat
-    "https://i.imgflip.com/1otk9c.jpg",    # Happy Minion
 ]
 
 # --- Input from user ---
@@ -39,7 +32,7 @@ topic = st.text_input("Enter a concept/topic for a smart Indian-style meme:")
 # --- Zoom slider ---
 zoom_factor = st.slider("Zoom In / Out", min_value=0.5, max_value=2.0, value=1.0, step=0.1)
 
-# --- Session state to preserve the same meme ---
+# --- Session state to preserve meme and caption ---
 if "generated_meme" not in st.session_state:
     st.session_state.generated_meme = None
 if "generated_text" not in st.session_state:
@@ -52,12 +45,11 @@ if topic and (st.session_state.generated_meme is None or generate_new):
     try:
         model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-        # --- Smart prompt for extra humor ---
+        # --- Smarter prompt for humor ---
         prompt = (
             f"Understand the concept '{topic}' and generate 7 short, punchy, funny meme captions. "
-            "Make them very simple, relatable to Indian culture (school life, exams, traffic, cricket, food, Bollywood, family), "
-            "include emojis if relevant, keep them school-appropriate, and do not number them. "
-            "Output captions separated by new lines."
+            "Make them simple, relatable to Indian culture (school, exams, traffic, cricket, food, Bollywood), "
+            "include emojis, school-safe, no numbering. Output captions separated by new lines."
         )
 
         response = model.generate_content(prompt)
@@ -66,10 +58,12 @@ if topic and (st.session_state.generated_meme is None or generate_new):
             captions = ["Hmm, couldn't think of a meme 😅", "This one is tricky! 🤔"]
 
         meme_text = random.choice(captions)
+
+        # --- Pick a random meme image ---
         img_url = random.choice(meme_images)
         img = Image.open(BytesIO(requests.get(img_url).content))
 
-        # --- Add text above image ---
+        # --- Add space above image for caption ---
         W, H = img.size
         new_img = Image.new("RGB", (W, H + 180), "white")
         draw = ImageDraw.Draw(new_img)
@@ -79,17 +73,17 @@ if topic and (st.session_state.generated_meme is None or generate_new):
         except:
             font = ImageFont.load_default()
 
-        # --- Center the text ---
+        # --- Center the text above the image ---
         bbox = draw.textbbox((0, 0), meme_text, font=font)
         text_w = bbox[2] - bbox[0]
         x = (W - text_w) / 2
         y = 30
         draw.text((x, y), meme_text, font=font, fill="black")
 
-        # Paste original meme below the text
+        # Paste meme image below text
         new_img.paste(img, (0, 180))
 
-        # Save in session state
+        # --- Save in session state to prevent new meme on zoom ---
         st.session_state.generated_meme = new_img
         st.session_state.generated_text = meme_text
 

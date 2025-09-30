@@ -43,26 +43,46 @@ if concept:
         except:
             font = ImageFont.load_default()
 
-        # Wrap text (simple split by length)
-        max_width = 30
-        lines = []
+        # --- Wrap text manually ---
+        max_chars_per_line = 30
         words = meme_text.split()
+        lines = []
         line = ""
         for word in words:
-            if len(line + " " + word) <= max_width:
+            if len(line + " " + word) <= max_chars_per_line:
                 line += " " + word
             else:
                 lines.append(line.strip())
                 line = word
         lines.append(line.strip())
 
-        # Draw each line centered
+        # --- Draw each line centered using textbbox ---
         W, H = img.size
-        y_text = H - (len(lines) * 50) - 20
+        total_text_height = 0
+        line_heights = []
+
+        # Calculate total height
         for line in lines:
-            w, h = draw.textsize(line, font=font)
+            bbox = draw.textbbox((0, 0), line, font=font)
+            h = bbox[3] - bbox[1]
+            line_heights.append(h)
+            total_text_height += h + 5  # spacing
+
+        y_text = H - total_text_height - 20  # start above bottom
+
+        for i, line in enumerate(lines):
+            bbox = draw.textbbox((0, 0), line, font=font)
+            w = bbox[2] - bbox[0]
+            h = bbox[3] - bbox[1]
             x = (W - w) / 2
-            draw.text((x, y_text), line, font=font, fill="white", stroke_fill="black", stroke_width=2)
+            draw.text(
+                (x, y_text),
+                line,
+                font=font,
+                fill="white",
+                stroke_fill="black",
+                stroke_width=2
+            )
             y_text += h + 5
 
         # --- Show final meme ---

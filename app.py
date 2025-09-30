@@ -8,7 +8,8 @@ from io import BytesIO
 # Configure Gemini API key
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-st.title("🤖 AI Meme Generator with Zoom & More Humor")
+# --- Streamlit app title ---
+st.title("🤖 AI Meme Generator")
 
 # Meme templates
 meme_images = [

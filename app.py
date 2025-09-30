@@ -22,8 +22,8 @@ concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 
 if concept:
     try:
-        # --- Initialize a Gemini model ---
-        model = genai.GenerativeModel("gemini-2.5-flash-lite")  # text generation model
+        # --- Initialize Gemini model ---
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
         # --- Improved prompt for clearer captions ---
         prompt = f"""
@@ -45,10 +45,10 @@ if concept:
         img_data = requests.get(meme_image_url).content
         img = Image.open(BytesIO(img_data))
 
-        # --- Draw caption on image ---
+        # --- Set up font ---
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arial.ttf", 40)
+            font = ImageFont.truetype("arial.ttf", 50)  # bigger font
         except:
             font = ImageFont.load_default()
 
@@ -65,37 +65,30 @@ if concept:
                 line = word
         lines.append(line.strip())
 
-        # --- Draw each line centered using textbbox ---
+        # --- Create new canvas with extra space for text below ---
         W, H = img.size
-        total_text_height = 0
-        line_heights = []
+        extra_height = (len(lines) * 60) + 40  # room for bigger text
+        new_img = Image.new("RGB", (W, H + extra_height), "white")
+        new_img.paste(img, (0, 0))
 
-        # Calculate total height
+        draw = ImageDraw.Draw(new_img)
+
+        # --- Draw text below the image ---
+        y_text = H + 20
         for line in lines:
             bbox = draw.textbbox((0, 0), line, font=font)
-            h = bbox[3] - bbox[1]
-            line_heights.append(h)
-            total_text_height += h + 5  # spacing
-
-        y_text = H - total_text_height - 20  # start above bottom
-
-        for i, line in enumerate(lines):
-            bbox = draw.textbbox((0, 0), line, font=font)
             w = bbox[2] - bbox[0]
-            h = bbox[3] - bbox[1]
             x = (W - w) / 2
             draw.text(
                 (x, y_text),
                 line,
                 font=font,
-                fill="white",
-                stroke_fill="black",
-                stroke_width=2
+                fill="black"
             )
-            y_text += h + 5
+            y_text += bbox[3] - bbox[1] + 10  # spacing
 
         # --- Show final meme ---
-        st.image(img, caption="✨ Your AI-Generated Meme", use_column_width=True)
+        st.image(new_img, caption="✨ Your AI-Generated Meme", use_column_width=True)
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")

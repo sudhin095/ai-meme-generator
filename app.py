@@ -45,54 +45,58 @@ if "generated_meme" not in st.session_state:
 if "generated_text" not in st.session_state:
     st.session_state.generated_text = None
 
-if topic:
+# --- Generate New Meme Button ---
+generate_new = st.button("Generate New Meme")
+
+if topic and (st.session_state.generated_meme is None or generate_new):
     try:
-        if st.session_state.generated_meme is None:
-            model = genai.GenerativeModel("gemini-2.5-flash-lite")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-            # --- Smart prompt for clean humor ---
-            prompt = (
-                f"Understand the concept '{topic}' and generate 5 short, funny, school-appropriate meme captions. "
-                "Make them simple, relatable to Indian culture, include emojis if relevant, and do not number them. "
-                "Output captions separated by new lines."
-            )
+        # --- Smart prompt for extra humor ---
+        prompt = (
+            f"Understand the concept '{topic}' and generate 7 short, punchy, funny meme captions. "
+            "Make them very simple, relatable to Indian culture (school life, exams, traffic, cricket, food, Bollywood, family), "
+            "include emojis if relevant, keep them school-appropriate, and do not number them. "
+            "Output captions separated by new lines."
+        )
 
-            response = model.generate_content(prompt)
-            captions = [c.strip() for c in response.text.strip().split("\n") if c.strip()]
-            if not captions:
-                captions = ["Hmm, couldn't think of a meme 😅", "This one is tricky! 🤔"]
+        response = model.generate_content(prompt)
+        captions = [c.strip() for c in response.text.strip().split("\n") if c.strip()]
+        if not captions:
+            captions = ["Hmm, couldn't think of a meme 😅", "This one is tricky! 🤔"]
 
-            meme_text = random.choice(captions)  # pick one caption randomly
-            img_url = random.choice(meme_images)
-            img = Image.open(BytesIO(requests.get(img_url).content))
+        meme_text = random.choice(captions)
+        img_url = random.choice(meme_images)
+        img = Image.open(BytesIO(requests.get(img_url).content))
 
-            # --- Add text above image ---
-            W, H = img.size
-            new_img = Image.new("RGB", (W, H + 180), "white")
-            draw = ImageDraw.Draw(new_img)
+        # --- Add text above image ---
+        W, H = img.size
+        new_img = Image.new("RGB", (W, H + 180), "white")
+        draw = ImageDraw.Draw(new_img)
 
-            try:
-                font = ImageFont.truetype("arial.ttf", 140)  # Bigger font for readability
-            except:
-                font = ImageFont.load_default()
+        try:
+            font = ImageFont.truetype("arial.ttf", 150)  # Big font for readability
+        except:
+            font = ImageFont.load_default()
 
-            # --- Center the text ---
-            bbox = draw.textbbox((0, 0), meme_text, font=font)
-            text_w = bbox[2] - bbox[0]
-            x = (W - text_w) / 2
-            y = 30
-            draw.text((x, y), meme_text, font=font, fill="black")
+        # --- Center the text ---
+        bbox = draw.textbbox((0, 0), meme_text, font=font)
+        text_w = bbox[2] - bbox[0]
+        x = (W - text_w) / 2
+        y = 30
+        draw.text((x, y), meme_text, font=font, fill="black")
 
-            # Paste original meme below the text
-            new_img.paste(img, (0, 180))
+        # Paste original meme below the text
+        new_img.paste(img, (0, 180))
 
-            # Save in session state
-            st.session_state.generated_meme = new_img
-            st.session_state.generated_text = meme_text
-
-        # --- Display with zoom ---
-        display_width = int(st.session_state.generated_meme.width * zoom_factor)
-        st.image(st.session_state.generated_meme, caption="Your AI Meme!", width=display_width)
+        # Save in session state
+        st.session_state.generated_meme = new_img
+        st.session_state.generated_text = meme_text
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")
+
+# --- Display meme with zoom ---
+if st.session_state.generated_meme:
+    display_width = int(st.session_state.generated_meme.width * zoom_factor)
+    st.image(st.session_state.generated_meme, caption="Your AI Meme!", width=display_width)

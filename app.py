@@ -42,39 +42,39 @@ if topic:
 
         response = model.generate_content(prompt)
         captions = response.text.strip().split("\n")
-        meme_text = random.choice(captions)
+        meme_text = random.choice(captions)  # pick one caption randomly
 
         # --- Pick a random meme image ---
         img_url = random.choice(meme_images)
         img = Image.open(BytesIO(requests.get(img_url).content))
 
-        # --- Dynamic font sizing ---
+        # --- Prepare font dynamically ---
         draw = ImageDraw.Draw(img)
-        W, H = img.size
-        max_width = W - 40  # padding
-        font_size = 100
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
+        max_font_size = 150  # Bigger maximum font size
+        min_font_size = 50
+        font_size = max_font_size
 
-        # Reduce font size until text fits
-        bbox = draw.textbbox((0, 0), meme_text, font=font)
-        text_width = bbox[2] - bbox[0]
-        while text_width > max_width and font_size > 10:
-            font_size -= 5
+        # Reduce font size if text is too wide
+        while True:
             try:
                 font = ImageFont.truetype("arial.ttf", font_size)
             except:
                 font = ImageFont.load_default()
+                break
             bbox = draw.textbbox((0, 0), meme_text, font=font)
             text_width = bbox[2] - bbox[0]
+            if text_width <= img.width - 40 or font_size <= min_font_size:
+                break
+            font_size -= 5
 
         # --- Add space above image ---
+        W, H = img.size
         new_img = Image.new("RGB", (W, H + font_size + 40), "white")
         draw = ImageDraw.Draw(new_img)
 
         # --- Place text above the image ---
+        bbox = draw.textbbox((0, 0), meme_text, font=font)
+        text_width = bbox[2] - bbox[0]
         x = (W - text_width) / 2
         y = 20
         draw.text((x, y), meme_text, font=font, fill="black")

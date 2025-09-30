@@ -11,7 +11,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- Streamlit app ---
 st.title("🤖 AI Meme Generator")
 
-# Meme templates (replace with actual images if needed)
+# Meme templates
 meme_images = [
     "https://i.imgflip.com/9ehk.jpg",       # One Does Not Simply
     "https://i.imgflip.com/1otk96.jpg",    # Change My Mind
@@ -33,15 +33,20 @@ if topic:
     try:
         model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-        # --- Smart, concept-aware prompt ---
+        # --- Smarter, concept-aware prompt ---
         prompt = (
-            f"Understand the concept '{topic}' and generate 3 short, punchy, funny meme captions. "
-            "Keep it very simple, relatable to Indian culture, under 12 words each. "
-            "Include emojis if relevant. Output captions separated by new lines."
+            f"Understand the concept '{topic}' and generate 5 short, punchy, funny meme captions. "
+            "Make them simple, relatable to Indian culture, and include emojis if relevant. "
+            "Do not number the captions. Output captions separated by new lines."
         )
 
         response = model.generate_content(prompt)
-        captions = response.text.strip().split("\n")
+
+        # --- Clean captions ---
+        captions = [c.strip() for c in response.text.strip().split("\n") if c.strip()]
+        if not captions:
+            captions = ["Hmm, couldn't think of a meme 😅", "This one is tricky! 🤔"]
+
         meme_text = random.choice(captions)  # pick one caption randomly
 
         # --- Pick a random meme image ---
@@ -51,23 +56,23 @@ if topic:
         # --- Prepare font ---
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arial.ttf", 80)  # Bigger font
+            font = ImageFont.truetype("arial.ttf", 120)  # even bigger font
         except:
             font = ImageFont.load_default()
 
         # --- Add space above image ---
         W, H = img.size
-        new_img = Image.new("RGB", (W, H + 120), "white")
+        new_img = Image.new("RGB", (W, H + 150), "white")
         draw = ImageDraw.Draw(new_img)
 
         # --- Place text above the image ---
         bbox = draw.textbbox((0, 0), meme_text, font=font)
         w = bbox[2] - bbox[0]
         x = (W - w) / 2
-        y = 20
+        y = 30
         draw.text((x, y), meme_text, font=font, fill="black")
 
-        new_img.paste(img, (0, 120))
+        new_img.paste(img, (0, 150))
 
         st.image(new_img, caption="Your AI Meme!", use_column_width=True)
 

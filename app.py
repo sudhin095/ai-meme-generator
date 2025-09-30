@@ -22,7 +22,9 @@ meme_images = [
     "https://i.imgflip.com/2fm6x.jpg",     # Success Kid
     "https://i.imgflip.com/4t0m5.jpg",     # Running Away Balloon
     "https://i.imgflip.com/30b1gx.jpg",    # Gru’s Plan
-    "https://i.pinimg.com/originals/your-jethalal-image.jpg"  # Jethalal meme (replace with direct image URL)
+    "https://i.pinimg.com/originals/your-jethalal-image.jpg",  # Jethalal meme (replace with direct image URL)
+    "https://i.imgflip.com/4t0m5.jpg",     # Monkey Puppet meme (replace with direct image URL)
+    "https://i.imgflip.com/4t0m5.jpg"      # Frog meme (replace with direct image URL)
 ]
 
 # Input from user

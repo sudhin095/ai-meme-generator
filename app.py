@@ -23,7 +23,7 @@ concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 if concept:
     try:
         # --- Initialize a Gemini model ---
-        model = genai.GenerativeModel("gemini-1.5-t")  # text generation model
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")  # text generation model
 
         # --- Generate meme caption ---
         response = model.generate_content(

@@ -11,7 +11,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # --- Streamlit app ---
 st.title("🤖 AI Meme Generator")
 
-# --- Expanded meme templates ---
+# --- School-safe meme templates ---
 meme_images = [
     "https://i.imgflip.com/9ehk.jpg",       # One Does Not Simply
     "https://i.imgflip.com/1otk96.jpg",    # Change My Mind
@@ -27,6 +27,10 @@ meme_images = [
     "https://i.pinimg.com/originals/6b/2e/85/6b2e85d47c7c8f1e4a1c07c3e1b8d0e2.jpg",  # Indian student meme
     "https://i.pinimg.com/originals/8e/3a/77/8e3a77f6d5c0f3a02f2d7f7b6d5f0b4f.jpg",  # Indian reaction meme
     "https://i.imgflip.com/2hgfw.jpg",     # Drake Approving / Disapproving
+    "https://i.imgflip.com/30b1gx.jpg",    # Mocking SpongeBob
+    "https://i.imgflip.com/2wifvo.jpg",    # Brain Expanding
+    "https://i.imgflip.com/4acd7j.jpg",    # Funny Cat
+    "https://i.imgflip.com/1otk9c.jpg",    # Happy Minion
 ]
 
 # --- Input from user ---
@@ -46,9 +50,9 @@ if topic:
         if st.session_state.generated_meme is None:
             model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-            # --- Smart prompt ---
+            # --- Smart prompt for clean humor ---
             prompt = (
-                f"Understand the concept '{topic}' and generate 5 short, punchy, funny meme captions. "
+                f"Understand the concept '{topic}' and generate 5 short, funny, school-appropriate meme captions. "
                 "Make them simple, relatable to Indian culture, include emojis if relevant, and do not number them. "
                 "Output captions separated by new lines."
             )

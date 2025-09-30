@@ -1,46 +1,49 @@
 import streamlit as st
+from google.generativeai import Client
 import random
-from PIL import Image, ImageDraw, ImageFont
-import os
-import google.generativeai as genai
 
-# Load Gemini API key securely from Streamlit secrets
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# Initialize the Google Generative AI client
+client = Client()
 
-# Set up Streamlit app
-st.title("🤖 AI Meme Generator for Learning")
-st.write("Enter a concept, and I'll generate a meme caption for you!")
+# List available models that support generateContent
+available_models = client.list_models()
+valid_models = [
+    model.name for model in available_models.models
+    if "generateContent" in model.supported_methods
+]
 
-concept = st.text_input("Enter a concept:")
+if not valid_models:
+    st.error("No models supporting generateContent are available.")
+    st.stop()
 
-if st.button("Generate Meme"):
-    if concept:
-        # Generate meme caption using Gemini
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(f"Create a short funny meme caption about: {concept}")
-        caption = response.text.strip()
+# Pick the first valid model
+model_to_use = valid_models[0]
+st.info(f"Using model: {model_to_use}")
 
-        # Pick a random meme template
-        templates = ["drake.jpg", "pikachu.png", "distracted.jpg"]
-        template = random.choice(templates)
+# Meme image templates
+meme_images = [
+    "https://i.imgflip.com/9ehk.jpg",    # One Does Not Simply
+    "https://i.imgflip.com/1otk96.jpg"   # Change My Mind
+]
 
-        img_path = os.path.join("templates", template)
-        if not os.path.exists(img_path):
-            st.error(f"Template {template} not found! Make sure it's uploaded.")
-        else:
-            img = Image.open(img_path)
-            draw = ImageDraw.Draw(img)
-            font = ImageFont.load_default()
+# Input from user
+concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 
-            # Add caption to meme
-            textwidth, textheight = draw.textsize(caption, font)
-            width, height = img.size
-            x = (width - textwidth) / 2
-            y = height - textheight - 20
-            draw.text((x, y), caption, font=font, fill="white")
+if concept:
+    try:
+        # Generate meme caption/text
+        response = client.generate_content(
+            model=model_to_use,
+            prompt=f"Create a short funny meme caption about: {concept}"
+        )
+        meme_text = response.result[0].content[0].text.strip()
 
-            # Display result
-            st.image(img, caption=caption)
-    else:
-        st.warning("Please enter a concept.")
+        # Pick a random meme image
+        meme_image = random.choice(meme_images)
 
+        # Display meme
+        st.image(meme_image, use_column_width=True)
+        st.markdown(f"**Meme Caption:** {meme_text}")
+
+    except Exception as e:
+        st.error(f"Error generating meme: {e}")

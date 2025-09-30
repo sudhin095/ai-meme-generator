@@ -9,7 +9,7 @@ from io import BytesIO
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # --- Streamlit app ---
-st.title("🤖 AI Meme Generator")
+st.title("🤖 AI Meme Generator with Zoom")
 
 # Meme templates
 meme_images = [
@@ -21,32 +21,27 @@ meme_images = [
     "https://i.imgflip.com/1bij.jpg",      # Leonardo DiCaprio Cheers
     "https://i.imgflip.com/2fm6x.jpg",     # Success Kid
     "https://i.imgflip.com/4t0m5.jpg",     # Running Away Balloon
-    "https://i.pinimg.com/originals/your-jethalal-image.jpg",  # Jethalal meme
-    "https://i.imgflip.com/4t0m5.jpg",     # Monkey Puppet
-    "https://i.imgflip.com/4t0m5.jpg",     # Frog meme
 ]
 
 # Input from user
 topic = st.text_input("Enter a concept/topic for a smart Indian-style meme:")
 
+# Zoom slider
+zoom_factor = st.slider("Zoom In / Out", min_value=0.5, max_value=2.0, value=1.0, step=0.1)
+
 if topic:
     try:
         model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-        # --- Smarter, concept-aware prompt ---
+        # --- Concept-aware prompt ---
         prompt = (
-            f"Understand the concept '{topic}' and generate 5 short, punchy, funny meme captions. "
-            "Make them simple, relatable to Indian culture, and include emojis if relevant. "
-            "Do not number the captions. Output captions separated by new lines."
+            f"Understand the concept '{topic}' and generate 3 short, punchy, funny meme captions. "
+            "Keep it very simple, relatable to Indian culture, under 12 words each. "
+            "Include emojis if relevant. Output captions separated by new lines."
         )
 
         response = model.generate_content(prompt)
-
-        # --- Clean captions ---
-        captions = [c.strip() for c in response.text.strip().split("\n") if c.strip()]
-        if not captions:
-            captions = ["Hmm, couldn't think of a meme 😅", "This one is tricky! 🤔"]
-
+        captions = response.text.strip().split("\n")
         meme_text = random.choice(captions)  # pick one caption randomly
 
         # --- Pick a random meme image ---
@@ -56,25 +51,30 @@ if topic:
         # --- Prepare font ---
         draw = ImageDraw.Draw(img)
         try:
-            font = ImageFont.truetype("arial.ttf", 120)  # even bigger font
+            font = ImageFont.truetype("arial.ttf", 100)  # Large font
         except:
             font = ImageFont.load_default()
 
-        # --- Add space above image ---
+        # --- Add space above image for text ---
         W, H = img.size
         new_img = Image.new("RGB", (W, H + 150), "white")
-        draw = ImageDraw.Draw(new_img)
+        new_draw = ImageDraw.Draw(new_img)
 
         # --- Place text above the image ---
-        bbox = draw.textbbox((0, 0), meme_text, font=font)
+        bbox = new_draw.textbbox((0, 0), meme_text, font=font)
         w = bbox[2] - bbox[0]
         x = (W - w) / 2
-        y = 30
-        draw.text((x, y), meme_text, font=font, fill="black")
+        y = 20
+        new_draw.text((x, y), meme_text, font=font, fill="black")
 
+        # Paste original image below the text
         new_img.paste(img, (0, 150))
 
-        st.image(new_img, caption="Your AI Meme!", use_column_width=True)
+        # --- Apply zoom ---
+        zoomed_img = new_img.resize((int(new_img.width * zoom_factor), int(new_img.height * zoom_factor)))
+
+        # Show the meme
+        st.image(zoomed_img, caption="Your AI Meme!", use_column_width=True)
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")

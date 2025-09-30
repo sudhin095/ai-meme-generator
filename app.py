@@ -35,52 +35,45 @@ if topic:
 
         # --- Smart, concept-aware prompt ---
         prompt = (
-            f"Understand the concept '{topic}' deeply and generate 3 witty, punchy, and culturally relatable Indian meme captions. "
-            "Make them funny, under 12 words each, simple to read, and include relevant emojis if it enhances humor. "
-            "The captions should clearly reflect the concept and be instantly understandable. Output captions separated by new lines."
+            f"Understand the concept '{topic}' and generate 3 short, punchy, funny meme captions. "
+            "Keep it very simple, relatable to Indian culture, under 12 words each. "
+            "Include emojis if relevant. Output captions separated by new lines, without numbering."
         )
 
         response = model.generate_content(prompt)
         captions = response.text.strip().split("\n")
-        meme_text = random.choice(captions)  # pick one caption randomly
+
+        # Remove numbering if present
+        clean_captions = [c.split(". ", 1)[-1] if ". " in c else c for c in captions]
+
+        meme_text = random.choice(clean_captions)  # pick one caption randomly
 
         # --- Pick a random meme image ---
         img_url = random.choice(meme_images)
         img = Image.open(BytesIO(requests.get(img_url).content))
 
-        # --- Prepare font dynamically ---
+        # --- Prepare font ---
         draw = ImageDraw.Draw(img)
-        max_font_size = 200  # Increased maximum font size
-        min_font_size = 50
-        font_size = max_font_size
-
-        while True:
-            try:
-                font = ImageFont.truetype("arial.ttf", font_size)
-            except:
-                font = ImageFont.load_default()
-                break
-            bbox = draw.textbbox((0, 0), meme_text, font=font)
-            text_width = bbox[2] - bbox[0]
-            if text_width <= img.width - 40 or font_size <= min_font_size:
-                break
-            font_size -= 5
+        try:
+            font = ImageFont.truetype("arial.ttf", 120)  # Even bigger font
+        except:
+            font = ImageFont.load_default()
 
         # --- Add space above image ---
         W, H = img.size
-        new_img = Image.new("RGB", (W, H + font_size + 60), "white")
+        new_img = Image.new("RGB", (W, H + 150), "white")
         draw = ImageDraw.Draw(new_img)
 
         # --- Place text above the image ---
         bbox = draw.textbbox((0, 0), meme_text, font=font)
-        text_width = bbox[2] - bbox[0]
-        x = (W - text_width) / 2
+        w = bbox[2] - bbox[0]
+        x = (W - w) / 2
         y = 20
         draw.text((x, y), meme_text, font=font, fill="black")
 
-        new_img.paste(img, (0, font_size + 60))
+        new_img.paste(img, (0, 150))
 
-        st.image(new_img, caption="Your Smart AI Meme!", use_column_width=True)
+        st.image(new_img, caption="Your AI Meme!", use_column_width=True)
 
     except Exception as e:
         st.error(f"Error generating meme: {e}")

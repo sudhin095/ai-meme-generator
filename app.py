@@ -4,7 +4,6 @@ import random
 
 # --- Configure Gemini API key ---
 # Make sure you have GEMINI_API_KEY in Streamlit secrets
-# st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # --- Streamlit app setup ---
@@ -21,14 +20,14 @@ concept = st.text_input("✨ Enter a topic/concept to make a meme:")
 
 if concept:
     try:
-        # --- List all models and pick a valid one ---
-        models = genai.list_models().models
+        # --- List all available models and convert generator to list ---
+        models = list(genai.list_models())
         valid_models = [m.name for m in models if "generateContent" in m.supported_methods]
 
         if not valid_models:
             st.error("No models supporting generateContent are available.")
         else:
-            model_to_use = valid_models[0]
+            model_to_use = valid_models[0]  # Pick the first valid model
             st.info(f"Using model: {model_to_use}")
 
             # --- Generate meme caption ---
